@@ -15,6 +15,17 @@ type User struct {
 	CreatedAt time.Time
 }
 
+
+func NewUser(id uuid.UUID, email string, name string) *User {
+	return &User{
+		ID:        id,
+		Email:     email,
+		Name:      name,
+		CreatedAt: time.Now(),
+	}
+}
+
+
 // Organization is the Tenant. It is the top-level container for users and resources.
 type Organization struct {
 	ID        uuid.UUID
@@ -22,6 +33,17 @@ type Organization struct {
 	OwnerID   uuid.UUID // The user who created and owns the organization
 	CreatedAt time.Time
 }
+
+
+func NewOrganization(id, ownerID uuid.UUID, name string) *Organization {
+	return &Organization{
+		ID:        id,
+		Name:      name,
+		OwnerID:   ownerID,
+		CreatedAt: time.Now(),
+	}
+}
+
 
 // Membership is the junction entity that links a User to an Organization.
 // This is the "User-under-Organization" block. It's the most important struct.
@@ -31,6 +53,16 @@ type Membership struct {
 	UserID         uuid.UUID // Foreign Key to User
 	Role           string    // e.g., "owner", "admin", "member"
 	JoinedAt       time.Time
+}
+
+
+func NewMembership(userID, organizationID uuid.UUID, role string) *Membership {
+	return &Membership{
+		UserID:         userID,
+		OrganizationID: organizationID,
+		Role:           role,
+		JoinedAt:       time.Now(),
+	}
 }
 
 // Invite represents a pending invitation for a user to join an organization.
@@ -44,3 +76,20 @@ type Invite struct {
 	ExpiresAt      time.Time
 	CreatedAt      time.Time
 }
+
+
+func NewInvite(id, organizationID, inviterID uuid.UUID, inviteeEmail, role, token string) *Invite {
+	createdAt := time.Now()
+	expiresAt := createdAt.Add(time.Hour * 24)
+	return &Invite{
+		ID:             id,
+		OrganizationID: organizationID,
+		InviterID:      inviterID,
+		InviteeEmail:   inviteeEmail,
+		Role:           role,
+		Token:          token,
+		CreatedAt:      createdAt,
+		ExpiresAt:      expiresAt,
+	}
+}
+
