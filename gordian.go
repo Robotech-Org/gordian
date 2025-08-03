@@ -1,56 +1,95 @@
 package gordian
 
-import "context"
+import (
+	"context"
+	"errors"
+	"fmt"
 
-type OrganizationStore interface {
-	Create(ctx context.Context, org *Organization) error
+	"github.com/google/uuid"
+)
+
+type Service struct {
+	orgStore  OrganizationStore
+	userStore UserStore
+	memStore  MembershipStore
+	invStore  InvitationStore
+	emailer   Emailer
 }
 
-type UserStore interface {
-	Create(ctx context.Context, user *User) error
-}
-
-type MembershipStore interface {
-	Create(ctx context.Context, membership *Membership) error
-}
-
-type InvitationStore interface {
-	Create(ctx context.Context, invitation *Invite) error
-}
-
-type GordianService struct {
-	OrganizationStore OrganizationStore
-	UserStore         UserStore
-	MembershipStore   MembershipStore
-	InvitationStore   InvitationStore
-}
-
-func NewGordianService(
+func New(
 	orgStore OrganizationStore,
 	userStore UserStore,
 	membershipStore MembershipStore,
 	invitationStore InvitationStore,
-) *GordianService {
-	return &GordianService{
-		OrganizationStore: orgStore,
-		UserStore:         userStore,
-		MembershipStore:   membershipStore,
-		InvitationStore:   invitationStore,
+	emailer Emailer,
+
+) *Service {
+	return &Service{
+		orgStore:  orgStore,
+		userStore: userStore,
+		memStore:  membershipStore,
+		invStore:  invitationStore,
+		emailer:   emailer,
 	}
 }
 
-func (s *GordianService) CreateOrganization(ctx context.Context, org *Organization) error {
-	return s.OrganizationStore.Create(ctx, org)
+func (s *Service) CreateOrganization(ctx context.Context, name string, ownerID uuid.UUID) (*Organization, error) {
+	// 1. Validation Step
+	if len(name) < 3 {
+		return nil, fmt.Errorf("invalid organization name")
+	}
+
+	// 2. Create the organization
+	org := NewOrganization(ownerID, name)
+	if err := s.orgStore.Create(ctx, org); err != nil {
+		return nil, fmt.Errorf("failed to create organization: %w", err)
+	}
+
+	// 3. Create the owner membership[the user that created the organization is the owner / has the role of owner]
+	ownerMembership := NewMembership(ownerID, org.ID, "owner")
+	if err := s.memStore.Create(ctx, ownerMembership); err != nil {
+		return nil, fmt.Errorf("failed to create membership: %w", err)
+	}
+
+	return org, nil
 }
 
-func (s *GordianService) CreateUser(ctx context.Context, user *User) error {
-	return s.UserStore.Create(ctx, user)
+func (s *Service) CreateUser(ctx context.Context, email, name string) (*User, error) {
+	user := NewUser(email, name)
+	if err := s.userStore.Create(ctx, user); err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+	return user, nil
 }
 
-func (s *GordianService) CreateMembership(ctx context.Context, membership *Membership) error {
-	return s.MembershipStore.Create(ctx, membership)
+func (s *Service) CreateMembership(ctx context.Context, userID, orgID uuid.UUID, role string) (*Membership, error) {
+	membership := NewMembership(userID, orgID, role)
+	if err := s.memStore.Create(ctx, membership); err != nil {
+		return nil, fmt.Errorf("failed to create membership: %w", err)
+	}
+	return membership, nil
 }
 
-func (s *GordianService) CreateInvitation(ctx context.Context, invitation *Invite) error {
-	return s.InvitationStore.Create(ctx, invitation)
+func (s *Service) CreateInvitation(ctx context.Context, organizationID, inviterID uuid.UUID, inviteeEmail, role string) (*Invite, error) {
+	// 1. Validate input
+	if inviteeEmail == "" {
+		return nil, errors.New("invitee email cannot be empty")
+	}
+
+	//2. Create Token
+	token := uuid.New().String()
+
+	// 3. Create the invitation
+	invitation := NewInvite(organizationID, inviterID, inviteeEmail, role, token)
+	if err := s.invStore.Create(ctx, invitation); err != nil {
+		return nil, fmt.Errorf("failed to create invitation: %w", err)
+	}
+
+	// I will have to research on how to securily send email to invitee with token
+	err := s.emailer.SendInvitation(ctx, invitation)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send invitation email: %w", err)
+	}
+
+	return invitation, nil
 }

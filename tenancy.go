@@ -15,10 +15,9 @@ type User struct {
 	CreatedAt time.Time
 }
 
-
-func NewUser(id uuid.UUID, email string, name string) *User {
+func NewUser(email string, name string) *User {
 	return &User{
-		ID:        id,
+		ID:        uuid.New(),
 		Email:     email,
 		Name:      name,
 		CreatedAt: time.Now(),
@@ -34,10 +33,9 @@ type Organization struct {
 	CreatedAt time.Time
 }
 
-
-func NewOrganization(id, ownerID uuid.UUID, name string) *Organization {
+func NewOrganization(ownerID uuid.UUID, name string) *Organization {
 	return &Organization{
-		ID:        id,
+
 		Name:      name,
 		OwnerID:   ownerID,
 		CreatedAt: time.Now(),
@@ -77,12 +75,10 @@ type Invite struct {
 	CreatedAt      time.Time
 }
 
-
-func NewInvite(id, organizationID, inviterID uuid.UUID, inviteeEmail, role, token string) *Invite {
+func NewInvite(organizationID, inviterID uuid.UUID, inviteeEmail, role, token string) *Invite {
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(time.Hour * 24)
 	return &Invite{
-		ID:             id,
 		OrganizationID: organizationID,
 		InviterID:      inviterID,
 		InviteeEmail:   inviteeEmail,
@@ -92,4 +88,3 @@ func NewInvite(id, organizationID, inviterID uuid.UUID, inviteeEmail, role, toke
 		ExpiresAt:      expiresAt,
 	}
 }
-
