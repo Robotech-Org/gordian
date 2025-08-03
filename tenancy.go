@@ -34,6 +34,7 @@ type Organization struct {
 
 func NewOrganization(ownerID uuid.UUID, name string) *Organization {
 	return &Organization{
+		ID:        uuid.New(),
 		Name:      name,
 		OwnerID:   ownerID,
 		CreatedAt: time.Now(),
@@ -52,6 +53,7 @@ type Membership struct {
 
 func NewMembership(userID, organizationID uuid.UUID, role string) *Membership {
 	return &Membership{
+		ID:             uuid.New(),
 		UserID:         userID,
 		OrganizationID: organizationID,
 		Role:           role,
@@ -75,6 +77,7 @@ func NewInvite(organizationID, inviterID uuid.UUID, inviteeEmail, role, token st
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(time.Hour * 24)
 	return &Invite{
+		ID:             uuid.New(),
 		OrganizationID: organizationID,
 		InviterID:      inviterID,
 		InviteeEmail:   inviteeEmail,
