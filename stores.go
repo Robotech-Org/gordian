@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
+
 // Defines contract for storing organizations.
 type OrganizationStore interface {
 	Create(ctx context.Context, org *Organization) error

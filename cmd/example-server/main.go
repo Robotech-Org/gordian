@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"fmt"
 	"log"
 	"os"
@@ -20,7 +21,6 @@ func init() {
 }
 
 func main() {
-	// --- Step 1: Connect to the database (Carol's responsibility) ---
 	dsn := os.Getenv("DATABASE_URL")
 	log.Printf("Connecting to database with dsn: %s", dsn)
 	if dsn == "" {
@@ -31,6 +31,7 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
+
 	mailtrapCfg := mailtrap.Config{
 		Host:     os.Getenv("EMAIL_HOST"),
 		Port:     os.Getenv("EMAIL_PORT"),
@@ -39,6 +40,7 @@ func main() {
 		FromAddr: "noreply@diagramly.com",
 	}
 	emailer := mailtrap.NewEmailer(mailtrapCfg)
+
 
 	db.AutoMigrate(&gordian.User{}, &gordian.Organization{}, &gordian.Membership{}, &gordian.Invite{})
 	log.Println("Database migration complete.")
@@ -49,7 +51,9 @@ func main() {
 	memStore := gormadapter.NewMembershipStore(db)
 	invStore := gormadapter.NewInviteStore(db)
 
+
 	gordianService := gordian.New(orgStore, userStore, memStore, invStore, emailer)
+
 	log.Println("Gordian service initialized.")
 
 	// --- Step 3: Use the service to perform a real operation (The Test) ---
@@ -67,6 +71,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: Failed to create organization: %v", err)
 	}
+
 
 	// Get the organization by ID
 	retrievedOrg, err := gordianService.GetOrganization(context.Background(), org.ID)
