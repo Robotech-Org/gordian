@@ -54,6 +54,24 @@ func (s *Service) CreateOrganization(ctx context.Context, name string, ownerID u
 	return org, nil
 }
 
+
+func (s *Service) FindUserByEmail(ctx context.Context, email string) (User, error) {
+	user, err := s.userStore.FindByEmail(ctx, email)
+	if err != nil {
+		return User{}, fmt.Errorf("failed to find user: %w", err)
+	}
+	return user, nil
+}
+
+func (s *Service) GetOrganization(ctx context.Context, id uuid.UUID) (*Organization, error) {
+	org, err := s.orgStore.Get(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get organization: %w", err)
+	}
+	return org, nil
+}
+
+
 func (s *Service) CreateUser(ctx context.Context, email, name string) (*User, error) {
 	user := NewUser(email, name)
 	if err := s.userStore.Create(ctx, user); err != nil {
@@ -62,6 +80,22 @@ func (s *Service) CreateUser(ctx context.Context, email, name string) (*User, er
 	return user, nil
 }
 
+func (s *Service) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
+	user, err := s.userStore.Get(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	return user, nil
+}
+
+// func (s *Service) GetUserRole(ctx context.Context, userID uuid.UUID) (string, error) {
+// 	userRole, err := s.userStore.GetUserRole(ctx, userID)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to get user role: %w", err)
+// 	}
+// 	return userRole, nil
+// }
+
 func (s *Service) CreateMembership(ctx context.Context, userID, orgID uuid.UUID, role string) (*Membership, error) {
 	membership := NewMembership(userID, orgID, role)
 	if err := s.memStore.Create(ctx, membership); err != nil {
@@ -69,6 +103,23 @@ func (s *Service) CreateMembership(ctx context.Context, userID, orgID uuid.UUID,
 	}
 	return membership, nil
 }
+
+func (s *Service) GetMembers(ctx context.Context, orgID uuid.UUID) ([]*Membership, error) {
+	userID := ctx.Value("userID").(uuid.UUID)
+	userRole, err := s.userStore.GetUserRole(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user role: %w", err)
+	}
+	if userRole != "admin" {
+		return nil, fmt.Errorf("user is not authorized")
+	}
+	memberships, err := s.memStore.GetMembers(ctx, orgID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get memberships: %w", err)
+	}
+	return memberships, nil
+}
+
 
 func (s *Service) CreateInvitation(ctx context.Context, organizationID, inviterID uuid.UUID, inviteeEmail, role string) (*Invite, error) {
 	// 1. Validate input
@@ -93,3 +144,44 @@ func (s *Service) CreateInvitation(ctx context.Context, organizationID, inviterI
 
 	return invitation, nil
 }
+
+
+func (s *Service) VerifyInvitation(ctx context.Context, token string) (bool, error) {
+	valid, err := s.invStore.Verify(ctx, token)
+	if err != nil {
+		return false, fmt.Errorf("failed to verify invitation: %w", err)
+	}
+
+	return valid, nil
+}
+
+func (s *Service) AddMemberToOrganization(ctx context.Context, orgID, userID uuid.UUID) error {
+	if err := s.memStore.Create(ctx, NewMembership(userID, orgID, "member")); err != nil {
+		return fmt.Errorf("failed to create membership: %w", err)
+	}
+	return nil
+}
+
+// func (s *Service) AcceptInvitation(ctx context.Context, token string) error {
+// 	invitation, err := s.invStore.GetByToken(ctx, token)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to get invitation by token: %w", err)
+// 	}
+
+// 	if invitation.Status != "pending" {
+// 		return errors.New("invitation is not pending")
+// 	}
+
+// 	userID := ctx.Value("userID").(uuid.UUID)
+// 	membership := NewMembership(userID, invitation.OrganizationID, invitation.Role)
+// 	if err := s.memStore.Create(ctx, membership); err != nil {
+// 		return fmt.Errorf("failed to create membership: %w", err)
+// 	}
+
+// 	if err := s.invStore.UpdateStatus(ctx, token, "accepted"); err != nil {
+// 		return fmt.Errorf("failed to update invitation status: %w", err)
+// 	}
+
+// 	return nil
+// }
+
