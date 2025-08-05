@@ -58,7 +58,7 @@ func (s *UserStore) Get(ctx context.Context, id uuid.UUID) (*gordian.User, error
 
 func (s *UserStore) GetUserRole(ctx context.Context, userID uuid.UUID) (string, error) {
 	var userRole string
-	err := s.DB.WithContext(ctx).Model(&gordian.User{}).Where("id = ?", userID).Pluck("role", &userRole).Error
+	err := s.DB.WithContext(ctx).Model(&gordian.Membership{}).Where("user_id = ?", userID).Pluck("role", &userRole).Error
 	if err != nil {
 		return "", fmt.Errorf("failed to get user role: %w", err)
 	}
@@ -98,6 +98,18 @@ func (s *MembershipStore) GetMembers(ctx context.Context, orgID uuid.UUID) ([]*g
 		return nil, fmt.Errorf("failed to get members: %w", err)
 	}
 	return memberships, nil
+}
+
+func (s *MembershipStore) GetMembership(ctx context.Context, userID uuid.UUID, orgID uuid.UUID) (gordian.Membership, error) {
+	var membership gordian.Membership
+	err := s.DB.WithContext(ctx).Where("user_id = ? AND organization_id = ?", userID, orgID).First(&membership).Error
+	if err != nil {
+		if err.Error() == gorm.ErrRecordNotFound.Error() {
+			return gordian.Membership{}, fmt.Errorf("no membership found")
+		}
+		return gordian.Membership{}, fmt.Errorf("failed to get membership: %w", err)
+	}
+	return membership, nil
 }
 
 // --- InviteStore Implementation ---
