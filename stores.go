@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 // Defines contract for storing organizations.
 type OrganizationStore interface {
 	Create(ctx context.Context, org *Organization) error
@@ -25,6 +24,7 @@ type UserStore interface {
 type MembershipStore interface {
 	Create(ctx context.Context, membership *Membership) error
 	GetMembers(ctx context.Context, orgID uuid.UUID) ([]*Membership, error)
+	GetMembership(ctx context.Context, userID uuid.UUID, orgID uuid.UUID) (Membership, error)
 }
 
 // Defines contract for storing invitations.

@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/Robotech-Org/gordian"
 	gormadapter "github.com/Robotech-Org/gordian/adapter/gorm"
@@ -72,7 +70,6 @@ func main() {
 		log.Fatalf("ERROR: Failed to create organization: %v", err)
 	}
 
-
 	// Get the organization by ID
 	retrievedOrg, err := gordianService.GetOrganization(context.Background(), org.ID)
 	if err != nil {
@@ -115,7 +112,6 @@ func main() {
 	*/
 
 	//Time to simulate the user accepting the invitation
-	time.Sleep(10 * time.Second)
 	validateToken, err := gordianService.VerifyInvitation(context.Background(), invite.Token)
 	if err != nil {
 		log.Fatalf("ERROR: Failed to verify invitation: %v", err)
@@ -139,6 +135,17 @@ func main() {
 	}
 	if err := gordianService.AddMemberToOrganization(context.Background(), org.ID, newMember.ID); err != nil {
 		log.Fatalf("ERROR: Failed to add user to organization: %v", err)
+		log.Printf("SUCCESS: Added user '%s' to organization '%s'", newMember.Email, org.Name)
+	}
+
+	members, err := gordianService.GetMembers(context.Background(), user.ID, org.ID)
+	if err != nil {
+		log.Fatalf("ERROR: Failed to get organization members: %v", err)
+	}
+	log.Printf("SUCCESS: Found %d members in organization '%s'", len(members), org.Name)
+	for i, member := range members {
+		log.Printf("  Member %d: User ID: %s, Role: %s", i+1, member.UserID, member.Role)
+
 	}
 
 	log.Println("Integration test successful!")

@@ -104,8 +104,8 @@ func (s *Service) CreateMembership(ctx context.Context, userID, orgID uuid.UUID,
 	return membership, nil
 }
 
-func (s *Service) GetMembers(ctx context.Context, orgID uuid.UUID) ([]*Membership, error) {
-	userID := ctx.Value("userID").(uuid.UUID)
+func (s *Service) GetMembers(ctx context.Context, userID, orgID uuid.UUID) ([]*Membership, error) {
+	// userID := ctx.Value("userID").(uuid.UUID)
 	userRole, err := s.userStore.GetUserRole(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user role: %w", err)
@@ -118,6 +118,16 @@ func (s *Service) GetMembers(ctx context.Context, orgID uuid.UUID) ([]*Membershi
 		return nil, fmt.Errorf("failed to get memberships: %w", err)
 	}
 	return memberships, nil
+}
+
+
+func (s *Service) GetMemberships(ctx context.Context, userID uuid.UUID, orgID uuid.UUID) (membershipID uuid.UUID, role string, err error) {
+	// Look for the user's membership in the organization
+	membership, err := s.memStore.GetMembership(ctx, userID, orgID)
+	if err != nil {
+		return uuid.Nil, "", fmt.Errorf("failed to get membership: %w", err)
+	}
+	return membership.ID, membership.Role, nil
 }
 
 
@@ -184,4 +194,3 @@ func (s *Service) AddMemberToOrganization(ctx context.Context, orgID, userID uui
 
 // 	return nil
 // }
-
