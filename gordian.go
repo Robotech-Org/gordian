@@ -155,7 +155,6 @@ func (s *Service) CreateInvitation(ctx context.Context, organizationID, inviterI
 	return invitation, nil
 }
 
-
 func (s *Service) VerifyInvitation(ctx context.Context, token string) (bool, error) {
 	valid, err := s.invStore.Verify(ctx, token)
 	if err != nil {

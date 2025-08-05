@@ -33,7 +33,6 @@ func (s *OrganizationStore) Get(ctx context.Context, id uuid.UUID) (*gordian.Org
 	return &org, nil
 }
 
-
 // --- UserStore Implementation ---
 
 type UserStore struct {
@@ -76,7 +75,6 @@ func (s *UserStore) FindByEmail(ctx context.Context, email string) (gordian.User
 	}
 	return user, nil
 }
-
 
 // --- MembershipStore Implementation ---
 
@@ -131,7 +129,6 @@ func (s *InviteStore) Create(ctx context.Context, invite *gordian.Invite) error 
 	return s.DB.WithContext(ctx).Create(invite).Error
 }
 
-
 func (s *InviteStore) Verify(ctx context.Context, token string) (bool, error) {
 	query := `SELECT id FROM invites WHERE token = ?`
 	var inviteID string
@@ -140,3 +137,5 @@ func (s *InviteStore) Verify(ctx context.Context, token string) (bool, error) {
 		return false, fmt.Errorf("failed to verify invitation: %w", err)
 	}
 	return true, nil
+}
+

@@ -19,6 +19,7 @@ func init() {
 }
 
 func main() {
+
 	dsn := os.Getenv("DATABASE_URL")
 	log.Printf("Connecting to database with dsn: %s", dsn)
 	if dsn == "" {
