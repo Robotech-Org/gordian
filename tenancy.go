@@ -24,6 +24,7 @@ func NewUser(email string, name string) *User {
 	}
 }
 
+
 // Organization is the Tenant. It is the top-level container for users and resources.
 type Organization struct {
 	ID        uuid.UUID
@@ -41,6 +42,7 @@ func NewOrganization(ownerID uuid.UUID, name string) *Organization {
 	}
 }
 
+
 // Membership is the junction entity that links a User to an Organization.
 // This is the "User-under-Organization" block. It's the most important struct.
 type Membership struct {
@@ -50,6 +52,7 @@ type Membership struct {
 	Role           string    // e.g., "owner", "admin", "member"
 	JoinedAt       time.Time
 }
+
 
 func NewMembership(userID, organizationID uuid.UUID, role string) *Membership {
 	return &Membership{

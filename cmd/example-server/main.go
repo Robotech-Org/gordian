@@ -19,7 +19,6 @@ func init() {
 }
 
 func main() {
-	// --- Step 1: Connect to the database (Carol's responsibility) ---
 	dsn := os.Getenv("DATABASE_URL")
 	log.Printf("Connecting to database with dsn: %s", dsn)
 	if dsn == "" {
@@ -30,6 +29,7 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
+
 	mailtrapCfg := mailtrap.Config{
 		Host:     os.Getenv("EMAIL_HOST"),
 		Port:     os.Getenv("EMAIL_PORT"),
@@ -38,6 +38,7 @@ func main() {
 		FromAddr: "noreply@diagramly.com",
 	}
 	emailer := mailtrap.NewEmailer(mailtrapCfg)
+
 
 	db.AutoMigrate(&gordian.User{}, &gordian.Organization{}, &gordian.Membership{}, &gordian.Invite{})
 	log.Println("Database migration complete.")
@@ -48,7 +49,9 @@ func main() {
 	memStore := gormadapter.NewMembershipStore(db)
 	invStore := gormadapter.NewInviteStore(db)
 
+
 	gordianService := gordian.New(orgStore, userStore, memStore, invStore, emailer)
+
 	log.Println("Gordian service initialized.")
 
 	// --- Step 3: Use the service to perform a real operation (The Test) ---
@@ -142,6 +145,7 @@ func main() {
 	log.Printf("SUCCESS: Found %d members in organization '%s'", len(members), org.Name)
 	for i, member := range members {
 		log.Printf("  Member %d: User ID: %s, Role: %s", i+1, member.UserID, member.Role)
+
 	}
 
 	log.Println("Integration test successful!")
