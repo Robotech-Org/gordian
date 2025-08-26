@@ -120,7 +120,6 @@ func (s *Service) GetMembers(ctx context.Context, userID, orgID uuid.UUID) ([]*M
 	return memberships, nil
 }
 
-
 func (s *Service) GetMemberships(ctx context.Context, userID uuid.UUID, orgID uuid.UUID) (membershipID uuid.UUID, role string, err error) {
 	// Look for the user's membership in the organization
 	membership, err := s.memStore.GetMembership(ctx, userID, orgID)

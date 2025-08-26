@@ -138,4 +138,3 @@ func (s *InviteStore) Verify(ctx context.Context, token string) (bool, error) {
 	}
 	return true, nil
 }
-
