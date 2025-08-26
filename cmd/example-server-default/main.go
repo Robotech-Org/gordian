@@ -10,7 +10,6 @@ import (
 	gormadapter "github.com/Robotech-Org/gordian/adapter/gorm"
 	"github.com/Robotech-Org/gordian/cmd/example-server/mailtrap"
 	"github.com/Robotech-Org/gordian/cmd/example-server/models"
-	"github.com/Robotech-Org/gordian/cmd/example-server/services"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -59,26 +58,17 @@ func main() {
 
 	gordianService := gordian.New(orgStore, userStore, memStore, invStore, emailer)
 	log.Println("Gordian service initialized.")
-	userService := services.NewUserService(gordianService, db)
-	log.Println("Application user service initialized.")
 
 	// --- Step 3: Use the service to perform a real operation (The Test) ---
 	log.Println("Attempting to create a new user and organization...")
 
 	// Create a user first
-	user, err := userService.CreateUserWithStripe(context.Background(), "carol.extended@example.com", "Carol Extended")
-	if err != nil {
-		log.Fatalf("ERROR: Failed to create user with stripe: %v", err)
-	}
-	log.Printf("SUCCESS: Created user with ID: %s", user.ID)
-	log.Printf("SUCCESS: User has custom Stripe Customer ID: %s", user.StripeCustomerID)
 
-	/*user, err := gordianService.CreateUser(context.Background(), "test.user@example.com", "Test User")
+	user, err := gordianService.CreateUser(context.Background(), "test.user@example.com", "Test User")
 	if err != nil {
 		log.Fatalf("ERROR: Failed to create user: %v", err)
 	}
 	log.Printf("SUCCESS: Created user with ID: %s", user.ID)
-	*/
 
 	// Now create an organization with that user as the owner
 	org, err := gordianService.CreateOrganization(context.Background(), "My First Test Org", user.ID)
