@@ -54,7 +54,6 @@ func (s *Service) CreateOrganization(ctx context.Context, name string, ownerID u
 	return org, nil
 }
 
-
 func (s *Service) FindUserByEmail(ctx context.Context, email string) (User, error) {
 	user, err := s.userStore.FindByEmail(ctx, email)
 	if err != nil {
@@ -70,7 +69,6 @@ func (s *Service) GetOrganization(ctx context.Context, id uuid.UUID) (*Organizat
 	}
 	return org, nil
 }
-
 
 func (s *Service) CreateUser(ctx context.Context, email, name string) (*User, error) {
 	user := NewUser(email, name)
@@ -129,7 +127,6 @@ func (s *Service) GetMemberships(ctx context.Context, userID uuid.UUID, orgID uu
 	return membership.ID, membership.Role, nil
 }
 
-
 func (s *Service) CreateInvitation(ctx context.Context, organizationID, inviterID uuid.UUID, inviteeEmail, role string) (*Invite, error) {
 	// 1. Validate input
 	if inviteeEmail == "" {
@@ -169,26 +166,3 @@ func (s *Service) AddMemberToOrganization(ctx context.Context, orgID, userID uui
 	}
 	return nil
 }
-
-// func (s *Service) AcceptInvitation(ctx context.Context, token string) error {
-// 	invitation, err := s.invStore.GetByToken(ctx, token)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to get invitation by token: %w", err)
-// 	}
-
-// 	if invitation.Status != "pending" {
-// 		return errors.New("invitation is not pending")
-// 	}
-
-// 	userID := ctx.Value("userID").(uuid.UUID)
-// 	membership := NewMembership(userID, invitation.OrganizationID, invitation.Role)
-// 	if err := s.memStore.Create(ctx, membership); err != nil {
-// 		return fmt.Errorf("failed to create membership: %w", err)
-// 	}
-
-// 	if err := s.invStore.UpdateStatus(ctx, token, "accepted"); err != nil {
-// 		return fmt.Errorf("failed to update invitation status: %w", err)
-// 	}
-
-// 	return nil
-// }
