@@ -54,6 +54,7 @@ func (s *Service) CreateOrganization(ctx context.Context, name string, ownerID u
 	return org, nil
 }
 
+
 func (s *Service) FindUserByEmail(ctx context.Context, email string) (User, error) {
 	user, err := s.userStore.FindByEmail(ctx, email)
 	if err != nil {
@@ -69,6 +70,7 @@ func (s *Service) GetOrganization(ctx context.Context, id uuid.UUID) (*Organizat
 	}
 	return org, nil
 }
+
 
 func (s *Service) CreateUser(ctx context.Context, email, name string) (*User, error) {
 	user := NewUser(email, name)
@@ -126,6 +128,7 @@ func (s *Service) GetMemberships(ctx context.Context, userID uuid.UUID, orgID uu
 	}
 	return membership.ID, membership.Role, nil
 }
+
 
 func (s *Service) CreateInvitation(ctx context.Context, organizationID, inviterID uuid.UUID, inviteeEmail, role string) (*Invite, error) {
 	// 1. Validate input
